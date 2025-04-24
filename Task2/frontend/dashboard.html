@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto bg-white p-8 rounded-xl shadow-lg space-y-8">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Employee Dashboard</h1>
+    
+    <!-- Add Employee Button -->
+    <button onclick="window.location.href='addEmployee.html'" class="mb-6 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200">
+      Add Employee
+    </button>
+    
+    <!-- Search & Filter -->
+    <div class="flex justify-between items-center mb-6">
+      <input type="text" id="searchEmployee" placeholder="Search Employees..." class="px-4 py-2 border rounded-lg w-1/3" oninput="filterEmployees()">
+      <select id="roleFilter" class="px-4 py-2 border rounded-lg w-1/4" onchange="filterEmployees()">
+        <option value="">Filter by Role</option>
+        <option value="Software Developer">Software Developer</option>
+        <option value="Marketing Manager">Marketing Manager</option>
+        <option value="HR Specialist">HR Specialist</option>
+        <option value="DevOps Engineer">DevOps Engineer</option>
+        <option value="Sales Executive">Sales Executive</option>
+        <option value="IT Officer">IT Officer</option>
+        <!-- Add other roles dynamically if necessary -->
+      </select>
+    </div>
+
+    <!-- Employee List -->
+    <div id="employeeList" class="space-y-6">
+      <!-- Employee list will populate here -->
+    </div>
+  </div>
+
+  <script>
+    async function fetchEmployees() {
+      const res = await fetch('http://localhost:5000/api/employees');
+      const data = await res.json();
+      const container = document.getElementById('employeeList');
+      container.innerHTML = '';
+      data.forEach(emp => {
+        container.innerHTML += `
+          <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105" data-role="${emp.role.toLowerCase()}">
+            <h2 class="text-xl font-semibold text-blue-500">${emp.name}</h2>
+            <p class="text-gray-700">Email: ${emp.email}</p>
+            <p class="text-gray-700">Dept: ${emp.department}</p>
+            <p class="text-gray-700">Role: <span class="role">${emp.role}</span></p>
+            <div class="flex mt-4 space-x-4">
+              <button onclick="editEmployee('${emp._id}')" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200">
+                Edit
+              </button>
+              <button onclick="deleteEmployee('${emp._id}')" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition duration-200">
+                Delete
+              </button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function editEmployee(id) {
+      window.location.href = `updateEmployee.html?id=${id}`;
+    }
+
+    async function deleteEmployee(id) {
+      if (confirm("Delete this employee?")) {
+        await fetch(`http://localhost:5000/api/employees/${id}`, { method: 'DELETE' });
+        fetchEmployees();
+      }
+    }
+
+    function filterEmployees() {
+      const searchQuery = document.getElementById('searchEmployee').value.toLowerCase();
+      const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+
+      const employeeItems = document.querySelectorAll('#employeeList > div');
+      
+      employeeItems.forEach(item => {
+        const name = item.querySelector('h2').textContent.toLowerCase();
+        const role = item.getAttribute('data-role'); // Get role from data-attribute
+
+        // Apply filtering
+        if (
+          (name.includes(searchQuery) || searchQuery === '') &&
+          (role.includes(roleFilter) || roleFilter === '')
+        ) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    fetchEmployees();
+  </script>
+
+</body>
+</html>

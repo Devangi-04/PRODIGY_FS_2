@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-green-400 via-teal-500 to-blue-600 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-3xl font-bold text-center text-green-600 mb-6">Create Account</h2>
+    
+    <input id="username" type="text" placeholder="Username" class="border p-3 w-full mb-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+    <input id="password" type="password" placeholder="Password" class="border p-3 w-full mb-6 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
+
+    <button onclick="register()" class="bg-teal-600 text-white py-2 px-4 rounded-lg w-full hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400">Register</button>
+    
+    <p class="text-center mt-4 text-sm">Already have an account? <a href="login.html" class="text-teal-600 hover:underline">Login here</a></p>
+    <p id="msg" class="text-center mt-2 text-red-500"></p>
+  </div>
+
+  <script>
+    async function register() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const msg = document.getElementById('msg');
+
+      if (!username || !password) {
+        msg.textContent = "Both fields are required!";
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = 'green';
+          msg.textContent = 'Registration successful! Redirecting to login...';
+          setTimeout(() => window.location.href = 'login.html', 1500);
+        } else {
+          msg.textContent = data.message || 'Registration failed!';
+        }
+      } catch (err) {
+        msg.textContent = 'Server error. Please try again.';
+      }
+    }
+  </script>
+</body>
+</html>

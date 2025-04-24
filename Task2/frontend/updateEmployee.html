@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Employee</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-3xl font-bold text-center text-yellow-600 mb-6">Update Employee Details</h2>
+
+    <input id="name" type="text" placeholder="Employee Name" class="border p-3 w-full mb-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+    <input id="email" type="email" placeholder="Email Address" class="border p-3 w-full mb-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+    <input id="department" type="text" placeholder="Department" class="border p-3 w-full mb-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+    <input id="role" type="text" placeholder="Role" class="border p-3 w-full mb-6 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+
+    <button onclick="updateEmployee()" class="bg-yellow-600 text-white py-2 px-4 rounded-lg w-full hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400">Update Employee</button>
+    
+    <p id="msg" class="text-center mt-2 text-red-500"></p>
+  </div>
+
+  <script>
+    async function fetchEmployeeDetails() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      const res = await fetch(`http://localhost:5000/api/employees/${id}`);
+      const data = await res.json();
+      
+      if (res.ok) {
+        document.getElementById('name').value = data.name;
+        document.getElementById('email').value = data.email;
+        document.getElementById('department').value = data.department;
+        document.getElementById('role').value = data.role;
+      } else {
+        alert('Error fetching employee details');
+      }
+    }
+
+    async function updateEmployee() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const department = document.getElementById('department').value.trim();
+      const role = document.getElementById('role').value.trim();
+      const msg = document.getElementById('msg');
+      
+      if (!name || !email || !department || !role) {
+        msg.textContent = "All fields are required!";
+        return;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/employees/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, department, role })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = 'green';
+          msg.textContent = 'Employee details updated successfully! Redirecting to employee list...';
+          setTimeout(() => window.location.href = 'dashboard.html', 1500);
+        } else {
+          msg.textContent = data.message || 'Error updating employee!';
+        }
+      } catch (err) {
+        msg.textContent = 'Server error. Please try again.';
+      }
+    }
+
+    // Fetch employee details when page loads
+    fetchEmployeeDetails();
+  </script>
+</body>
+</html>
